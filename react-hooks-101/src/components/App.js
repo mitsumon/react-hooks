@@ -25,10 +25,11 @@ const App = () => {
 
   const handleClickDeleteAll = e => {
     e.preventDefault();
-    dispatch({
-      type: 'DELETE_ALL_EVENTS',
-    });    
+    if (window.confirm('本当にすべてのイベントを削除してもよろしいですか？')) {
+      dispatch({ type: 'DELETE_ALL_EVENTS' });
+    }
   }
+
   console.log(state);
 
   return (
@@ -58,12 +59,14 @@ const App = () => {
         <button 
           className="btn btn-primary"
           onClick={addEvent}
+          disabled={title === '' || body === ''}
         >
           イベント作成する
         </button>
         <button 
           className="btn btn-danger"
           onClick={e => handleClickDeleteAll(e)}
+          disabled={state.length === 0}
         >
           すべてのイベントを削除する
         </button>
