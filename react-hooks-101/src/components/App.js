@@ -1,92 +1,49 @@
-import React, { useReducer, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import Event from './Event';
-import reducer from '../reducers'
+import EventForm from './EventForm';
+import Events from './Events';
+import MoreEvents from './MoreEvents';
+import OperationLogs from './OperationLogs';
+import AppContext from '../contexts/AppContext';
+import reducer from '../reducers';
+import axios from 'axios'
+
+const ROOT_URL = 'https://udemy-utils.herokuapp.com/api/v1'
+const QUERYSTRING = '?token=token123'
+const APP_KEY = 'appWithRedux';
 
 const App = () => {
-  const [state, dispatch] = useReducer(reducer, []);
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const appState = localStorage.getItem(APP_KEY);
+  const initialState = appState ? JSON.parse(appState) : {
+    events: [],
+    moreEvents: [],
+    operationLogs: []
+  };
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const addEvent = e => {
-    e.preventDefault();
-
-    dispatch({
-      type: 'CREATE_EVENT',
-      title,
-      body
-    });
-
-    setTitle('');
-    setBody('');
-  }
-
-  const handleClickDeleteAll = e => {
-    e.preventDefault();
-    if (window.confirm('本当にすべてのイベントを削除してもよろしいですか？')) {
-      dispatch({ type: 'DELETE_ALL_EVENTS' });
-    }
-  }
-
-  console.log(state);
+  // console.log("Let's fetch data here." + JSON.stringify(state.moreEvents));
+  // useEffect(() => {
+  //   (async () => {
+  //     const response = await axios.get(`${ROOT_URL}/events${QUERYSTRING}`);
+  //     dispatch({ type: 'GET_EVENTS', data: response.data });
+      
+  //   })();
+  // }, [state]);
+  // useEffect(() => {
+  //   localStorage.setItem(APP_KEY, JSON.stringify(state));
+  // }, [state]);
 
   return (
-    <div className="container-fluid">
-      <h4>イベント作成フォーム</h4>
-      <form>
-        <div className="form-group">
-          <label htmlFor="formEventTitle">Title</label>
-          <input 
-            className="form-control"
-            id="formEventTitle"
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="formEventBody">Body</label>
-          <textarea 
-            className="form-control"
-            id="formEventBody"
-            value={body}
-            onChange={e => setBody(e.target.value)}
-          />
-        </div>
-
-        <button 
-          className="btn btn-primary"
-          onClick={addEvent}
-          disabled={title === '' || body === ''}
-        >
-          イベント作成する
-        </button>
-        <button 
-          className="btn btn-danger"
-          onClick={e => handleClickDeleteAll(e)}
-          disabled={state.length === 0}
-        >
-          すべてのイベントを削除する
-        </button>
-      </form>
-
-      <h4>イベント一覧</h4>
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Body</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          { state.map((event, index) => <Event key={index} event={event} dispatch={dispatch} />) }
-        </tbody>
-      </table>
-    </div>
+    <AppContext.Provider value={{ state, dispatch }}>
+      <div className="container-fluid">
+        <EventForm />
+        <Events />
+        <OperationLogs />
+        <MoreEvents />
+      </div>
+    </AppContext.Provider>
   );
 }
 
